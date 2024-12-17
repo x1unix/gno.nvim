@@ -162,6 +162,11 @@ end
 function M.setup(config)
   check_dependencies()
 
+  vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+    pattern = "*.gno",
+    command = "set filetype=gno",
+  })
+
   vim.treesitter.language.register("go", "gno")
   vim.api.nvim_create_augroup("gno", { clear = true })
 
