@@ -25,6 +25,13 @@ Gno language support for NeoVim.
 
 ## Installation
 
+### Prerequisites
+
+```bash
+go install github.com/gnolang/gnopls@latest
+go install mvdan.cc/gofumpt@latest
+```
+
 ### vim-plug
 
 ```vim
