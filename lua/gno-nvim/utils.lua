@@ -32,6 +32,105 @@ function M.get_gnoroot()
   return gnoroot
 end
 
+local function has_suffix(str, suffix)
+    return suffix == "" or str:sub(-#suffix) == suffix
+end
+
+--- Checks whether file path corresponds to a Gno golden test file.
+--- @return boolean
+function M.is_golden_test_file(fname)
+  return has_suffix(fname, "_filetest.gno")
+end
+
+--- Checks whether file path corresponds to a Gno unit test file.
+--- @return boolean
+function M.is_unit_test_file(fname)
+  return has_suffix(fname, "_test.gno")
+end
+
+local function find_buf_by_name(name)
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    -- Neovim always appends 'cwd' to buffer name under the hood.
+    if vim.api.nvim_buf_is_valid(buf) and vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":t")
+ == name then
+        return buf
+    end
+  end
+  return nil
+end
+
+---@class PanelCreateParams
+---@field cmd string # Command to spawn a panel
+---@field size? number # Custom panel size
+---@field syntax? string
+
+--- Creates a new or returns existing vsplit panel below in a current tab.
+---
+--- If panel with the same name exists - it will be reused.
+--- @param name string
+--- @param params PanelCreateParams
+function M.upsert_panel(name, params)
+  -- Append unique suffix based on tab page to prevent collision.
+  local id = name .. " [" .. vim.api.nvim_get_current_tabpage() .. "]"
+  local buf = find_buf_by_name(id)
+
+  if buf then
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
+    return buf
+  end
+
+  vim.cmd("botright " .. params.cmd)
+  local win = vim.api.nvim_get_current_win()
+  buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_win_set_buf(win, buf)
+  vim.api.nvim_buf_set_name(buf, id)
+  vim.bo[buf].buftype = "nofile"
+  vim.bo[buf].bufhidden = "wipe"
+
+  if params.syntax then
+    vim.bo[buf].filetype = params.syntax
+  end
+
+  if params.size then
+    vim.api.nvim_win_set_height(win, params.size)
+  end
+
+  vim.api.nvim_create_autocmd("BufWinLeave", {
+      buffer = buf,
+      callback = function()
+          if #vim.api.nvim_list_wins() == 1 then
+              vim.cmd("quit")
+          end
+      end,
+  })
+  return buf
+end
+
+--- Creates a new or returns existing vsplit panel below in a current tab.
+---
+--- If panel with the same name exists - it will be reused.
+--- @param name string
+--- @param syntax string
+function M.upsert_side_panel(name, syntax)
+  return M.upsert_panel(name, {
+      syntax = syntax,
+      cmd = "vsplit"
+    })
+end
+
+--- Creates a new or returns existing split panel below in a current tab.
+---
+--- If panel with the same name exists - it will be reused.
+--- @param name string
+--- @param syntax string
+function M.upsert_bottom_panel(name, syntax)
+  return M.upsert_panel(name, {
+      syntax = syntax,
+      cmd = "split",
+      size = 11,
+    })
+end
+
 --- Automatically finds gopls server in $PATH or $GOPATH.
 ---@return string, boolean
 function M.locate_gnopls()

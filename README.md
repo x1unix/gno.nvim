@@ -5,9 +5,17 @@ Gno language support for NeoVim.
 ## Features
 
 * Syntax highlighting (uses Go treesitter config).
-* Formatting on save using *gofumpt*.
 * Integration with gnopls using LSP.
+* Automatic format on save.
 * Support for [cmp-nvim-lsp](https://github.com/hrsh7th/cmp-nvim-lsp) (optional).
+
+### Commands
+
+* `:GnoDoc` - Show documentation for a package. Optional second argument is package name.
+* `:GnoFmt` - Format current file.
+* `:GnoTest` - Run unit test.
+    * `:GnoTest` - Test current directory or unit test file (if currently open).
+    * `:GnoTest ./package` - Test a specific directory.
 
 ## Prerequisites
 
@@ -20,7 +28,6 @@ Gno language support for NeoVim.
 
 ### Command-Line Tools
 
-* [gofumpt](https://github.com/mvdan/gofumpt) - Formatting
 * [gnopls](https://github.com/gnolang/gnopls/) - Language server
 
 ## Installation
@@ -29,7 +36,6 @@ Gno language support for NeoVim.
 
 ```bash
 go install github.com/gnolang/gnopls@latest
-go install mvdan.cc/gofumpt@latest
 ```
 
 ### vim-plug
