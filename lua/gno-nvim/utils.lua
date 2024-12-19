@@ -27,25 +27,49 @@ function M.get_gnoroot()
     return ""
   end
 
-  gnoroot = vim.fn.system(gno_bin .. "env GNOROOT")
+  gnoroot = vim.fn.system(gno_bin .. " env GNOROOT")
   gnoroot = vim.trim(gnoroot)
   return gnoroot
 end
 
-local function has_suffix(str, suffix)
+--- If value is a function - returns function result.
+--- Otherwise, returns a value.
+---@generic T
+---@param val T | fun(): T
+function M.unwrap_lazy(val)
+  if type(val) == "function" then
+    return val()
+  else
+    return val
+  end
+end
+
+--- Checks whether string has a prefix
+--- @param str string
+--- @param prefix string
+--- @return boolean
+function M.has_prefix(str, prefix)
+    return str:sub(1, #prefix) == prefix
+end
+
+--- Checks whether string has a suffix
+--- @param str string
+--- @param suffix string
+--- @return boolean
+function M.has_suffix(str, suffix)
     return suffix == "" or str:sub(-#suffix) == suffix
 end
 
 --- Checks whether file path corresponds to a Gno golden test file.
 --- @return boolean
 function M.is_golden_test_file(fname)
-  return has_suffix(fname, "_filetest.gno")
+  return M.has_suffix(fname, "_filetest.gno")
 end
 
 --- Checks whether file path corresponds to a Gno unit test file.
 --- @return boolean
 function M.is_unit_test_file(fname)
-  return has_suffix(fname, "_test.gno")
+  return M.has_suffix(fname, "_test.gno")
 end
 
 local function find_buf_by_name(name)
