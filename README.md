@@ -29,15 +29,14 @@ Gno language support for NeoVim.
 
 ### Command-Line Tools
 
-* [gnopls](https://github.com/gnolang/gnopls/) - Language server
+* Gno Language Server:
+    * [gnoverse/gnopls](https://github.com/gnoverse/gnopls) - Based on gopls.
+    * [golang/gnopls](https://github.com/gnolang/gnopls/) - Unstable, not recommended.
 
 ## Installation
 
-### Prerequisites
-
-```bash
-go install github.com/gnolang/gnopls@latest
-```
+> [!IMPORTANT]
+> Ensure that `gnopls` language server is installed and available in `$PATH`.
 
 ### vim-plug
 
