@@ -36,44 +36,36 @@ local function check_dependencies()
   end
 end
 
-local function register_gno_formatter()
-  vim.api.nvim_create_autocmd("BufWritePre", {
-    pattern = "*.gno",
-    callback = function(args)
-      local job = require "plenary.job"
-      local bufnr = vim.api.nvim_get_current_buf()
+---@class GnoNvimOpts : GnoNvimCommandsOpts
+---
+--- gno.nvim plugin config.
+---
+--- @field lsp? GnoNvimLSPConfig LSP client config for nvim-lspconfig.
+--- @field gnoroot? string | fun(): string Custom path to GNOROOT. Can be a callbale function to use a different value per-project.
 
-      -- unlike "args.file", contains full file path.
-      local filepath = vim.api.nvim_buf_get_name(bufnr)
-      local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+---@param opts GnoNvimOpts|nil
+---@return GnoNvimLSPConfig|nil
+local function lsp_config_from_opts(opts)
+  if not opts then
+    return nil
+  end
 
-      -- Format code and refresh the buffer
-      job
-        :new({
-          command = "gofumpt",
-          writer = lines,
-          on_exit = function(j, exit_code)
-            if exit_code == 0 then
-              vim.schedule(function()
-                vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, j:result())
-              end)
-            else
-              vim.schedule(function()
-                utils.log_write("Error running gofumpt", vim.log.levels.ERROR)
-              end)
-            end
-          end,
-        })
-        :sync()
-    end,
-  })
+  local lsp_cfg = opts.lsp or {}
+  local gnoroot = utils.unwrap_lazy(opts.gnoroot)
+  if gnoroot and gnoroot ~= "" then
+    local env = lsp_cfg.cmd_env or {}
+    env.GNOROOT = gnoroot
+    lsp_cfg.cmd_env = env
+  end
+
+  return lsp_cfg
 end
 
 --- Enables LSP server and formatter.
 ---
 --- See: https://neovim.io/doc/user/lsp.html#vim.lsp.config()
 ---
---- @param config? GnoNvimLSPConfig
+--- @param config? GnoNvimOpts
 function M.setup(config)
   check_dependencies()
 
@@ -85,8 +77,8 @@ function M.setup(config)
   vim.treesitter.language.register("go", "gno")
   vim.api.nvim_create_augroup("gno", { clear = true })
 
-  require("gno-nvim.commands").setup()
-  require("gno-nvim.lsp").setup(config)
+  require("gno-nvim.commands").setup(config)
+  require("gno-nvim.lsp").setup(lsp_config_from_opts(config))
 end
 
 return M

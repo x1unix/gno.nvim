@@ -3,7 +3,9 @@ local M = {}
 local job = require "plenary.job"
 local utils = require "gno-nvim.utils"
 
-local function gnodoc(opts)
+---@param opts table<string, any>
+---@param gno_opts GnoCmdOpts
+local function gnodoc(opts, gno_opts)
   -- Default: dirname of a current open file.
   local arg = opts.args ~= "" and opts.args or vim.fn.expand("%:p:h")
   local pkgname = opts.args ~= "" and opts.args or vim.fn.fnamemodify(arg, ":t")
@@ -11,7 +13,7 @@ local function gnodoc(opts)
   job
     :new({
       command = "gno",
-      args = { "doc", arg, "-all" },
+      args = { "doc", arg, "-all", table.unpack(gno_opts.global_args) },
       on_exit = function(j, exit_code)
         if exit_code ~= 0 then
           vim.schedule(function()
@@ -28,7 +30,8 @@ local function gnodoc(opts)
     }):start()
 end
 
-local function gnofmt()
+---@param _opts table<string, any>
+local function gnofmt(_opts)
   local bufnr = vim.api.nvim_get_current_buf()
   vim.lsp.buf.format({
     bufnr = bufnr,
@@ -63,7 +66,24 @@ local function get_test_context()
   }
 end
 
-local function gnotest(opts)
+---@param _opts table<string, any>
+---@param gno_opts GnoCmdOpts
+local function gnoroot(_opts, gno_opts)
+  local msg = "GNOROOT: "
+  print(vim.inspect(gno_opts.gnoroot))
+  if gno_opts.gnoroot then
+    msg = msg .. "Modified - " .. gno_opts.gnoroot
+  else
+    local r = utils.get_gnoroot()
+    msg = msg .. "System - " .. r
+  end
+
+  vim.notify(msg, vim.log.levels.INFO)
+end
+
+---@param opts table<string, any>
+---@param gno_opts GnoCmdOpts
+local function gnotest(opts, gno_opts)
   local cwd
   local verb
   local test_label
@@ -80,13 +100,17 @@ local function gnotest(opts)
     test_label = ctx.label
   end
 
-  local buf = utils.upsert_bottom_panel("GnoTest", "plaintext")
   vim.notify("GnoTest: " .. test_label, vim.log.levels.INFO)
+  local args = { "test", "-v", table.unpack(verb), table.unpack(gno_opts.global_args) }
+  local buf = utils.upsert_bottom_panel("GnoTest", "plaintext")
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
+    "$ gno " .. table.concat(args, " "),
+  })
 
   job
     :new({
       command = "gno",
-      args = { "test", "-v", table.unpack(verb) },
+      args = args,
       cwd = cwd,
       on_stdout = function (_, data)
         vim.schedule(function ()
@@ -110,22 +134,60 @@ local function gnotest(opts)
     }):start()
 end
 
-function M.setup()
+---@class GnoNvimCommandsOpts
+---@field gnoroot string|fun():string|nil Optional custom root dir
+
+---@class GnoCmdOpts
+---@field gnoroot? string
+---@field global_args string[]
+
+---Wrap command handler to pass global Gno args and other opts.
+---@param handler fun(vim_cmd_opts: table, gno_cmd_opts: GnoCmdOpts)
+---@param gno_opts GnoNvimCommandsOpts|nil
+---@return fun(table)
+local function wrap_cmd_handler(handler, gno_opts)
+  return function(opts)
+    local cmd_opts = {
+      global_args = {},
+    }
+
+    if gno_opts then
+      local r = utils.unwrap_lazy(gno_opts.gnoroot)
+      if r and r ~= "" then
+        cmd_opts.global_args = { "-root-dir", r }
+        cmd_opts.gnoroot = r
+      end
+    end
+
+    handler(opts, cmd_opts)
+  end
+end
+
+---@param opts GnoNvimCommandsOpts|nil?
+function M.setup(opts)
   vim.api.nvim_create_user_command(
     "GnoFmt", gnofmt,
-    { desc = "Show documentation for a specified package. By default shows documentation for current open directory." }
+    { desc = "Format current Gno file" }
   )
 
   vim.api.nvim_create_user_command(
-    "GnoDoc", gnodoc,
-    { desc = "Format current Gno file", nargs = "*" }
+    "GnoDoc", wrap_cmd_handler(gnodoc, opts),
+    { desc ="Show documentation for a specified package. By default shows documentation for current open directory." , nargs = "*" }
   )
 
   vim.api.nvim_create_user_command(
-    "GnoTest", vim.schedule_wrap(gnotest),
+    "GnoTest", vim.schedule_wrap(wrap_cmd_handler(gnotest, opts)),
     {
       desc = "Call gno test on package or currently open test file",
       nargs = "*",
+    }
+  )
+
+  vim.api.nvim_create_user_command(
+    "GnoRoot", vim.schedule_wrap(wrap_cmd_handler(gnoroot, opts)),
+    {
+      desc = "Print current GNOROOT",
+      nargs = 0,
     }
   )
 end
