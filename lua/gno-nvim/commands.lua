@@ -127,7 +127,7 @@ local function gnotest(opts, gno_opts)
           if exit_code ~= 0 then
             vim.notify("GnoTest: FAIL - " .. test_label, vim.log.levels.ERROR)
           else
-            vim.notify("gotest: PASS - " .. test_label, vim.log.levels.INFO)
+            vim.notify("GnoTest: PASS - " .. test_label, vim.log.levels.INFO)
           end
         end)
       end,
