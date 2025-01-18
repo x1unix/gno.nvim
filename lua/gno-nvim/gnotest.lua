@@ -157,8 +157,8 @@ function M.run_command(opts, gno_opts)
 
   if opts.args ~= "" then
     cwd = vim.fn.getcwd()
-    verb = { opts.fargs }
-    test_label = verb
+    verb = utils.array_concat({ "-run" }, opts.fargs)
+    test_label = table.concat(opts.fargs, " ")
   else
     local ctx = get_test_context()
     cwd = ctx.dir

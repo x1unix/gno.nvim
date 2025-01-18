@@ -18,7 +18,7 @@ https://github.com/user-attachments/assets/08f5d0db-78db-465d-96e7-62fb381b31bb
 * `:GnoRoot` - Print current gnoroot.
 * `:GnoTest` - Run unit test.
     * `:GnoTest` - Test current unit test file or package.
-    * `:GnoTest ./package` - Test a specific directory.
+    * `:GnoTest TestCaseName` - Test a specific test case.
 
 ## Prerequisites
 
