@@ -190,4 +190,51 @@ function M.locate_gnopls()
   return bin_path, true
 end
 
+---@param list table
+---@param i number
+---@param j number
+local function array_swap(list, i, j)
+  while (i < j) do
+    list[i], list[j] = list[j], list[i]
+
+    i = i + 1
+    j = j - 1
+  end
+end
+
+--- Shift array items. This is a mutable function!
+---@param arr table
+---@param offset number
+function M.array_shift(arr, offset)
+  local n = #arr
+  if n == 0 then
+    return
+  end
+
+  local shift = ((offset % n) + n) % n
+  if shift == 0 then
+    return
+  end
+
+  array_swap(arr, 1, n)
+  array_swap(arr, 1, shift)
+  array_swap(arr, shift + 1, n)
+end
+
+---Concat multiple arrays into one.
+---@generic T
+---@param ... T[]
+---@return T[]
+function M.array_concat(...)
+  local result = {}
+  for i = 1, select("#", ...) do
+    local t = select(i, ...)
+    for j = 1, #t do
+      result[#result + 1] = t[j]
+    end
+  end
+
+  return result
+end
+
 return M
