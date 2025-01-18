@@ -2,6 +2,8 @@
 
 Gno language support for NeoVim.
 
+./docs/demo.mp4
+
 ## Features
 
 * Syntax highlighting (uses Go treesitter config).
