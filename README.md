@@ -2,6 +2,8 @@
 
 Gno language support for NeoVim.
 
+https://github.com/user-attachments/assets/08f5d0db-78db-465d-96e7-62fb381b31bb
+
 ## Features
 
 * Syntax highlighting (uses Go treesitter config).
@@ -16,22 +18,30 @@ Gno language support for NeoVim.
 * `:GnoRoot` - Print current gnoroot.
 * `:GnoTest` - Run unit test.
     * `:GnoTest` - Test current unit test file or package.
-    * `:GnoTest ./package` - Test a specific directory.
+    * `:GnoTest TestCaseName` - Test a specific test case.
 
 ## Prerequisites
-
-### NeoVim Plugins
-
-* [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
-* [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
-* Optional:
-    - [cmp-nvim-lsp](https://github.com/hrsh7th/cmp-nvim-lsp)
 
 ### Command-Line Tools
 
 * Gno Language Server:
     * [gnoverse/gnopls](https://github.com/gnoverse/gnopls) - Based on gopls.
     * [golang/gnopls](https://github.com/gnolang/gnopls/) - Unstable, not recommended.
+
+### NeoVim Plugins
+
+#### Required Plugins
+
+* [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
+* [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
+
+#### Recommended Plugins
+
+* [cmp-nvim-lsp](https://github.com/hrsh7th/cmp-nvim-lsp) - Necessary to provide autocomplete from LSP server.
+* [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) - Treesitter grammars manager and configuration.
+* [telescope-ui-select.nvim](https://github.com/nvim-telescope/telescope-ui-select.nvim) - For unit tests run selector dialog.
+* [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) - Prerequisite for telescope-ui-select.nvim.
+
 
 ## Installation
 
