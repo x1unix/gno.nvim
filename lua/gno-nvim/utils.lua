@@ -130,6 +130,15 @@ function M.upsert_panel(name, params)
   return buf
 end
 
+---Scroll a buffer view to a bottom.
+---@param bufnr number
+function M.buf_scroll_to_bottom(bufnr)
+  -- Copy from: https://github.com/MunifTanjim/nui.nvim/discussions/327
+  vim.api.nvim_buf_call(bufnr, function()
+    vim.api.nvim_win_set_cursor(0, { vim.fn.line('$'), 1 })
+  end)
+end
+
 --- Creates a new or returns existing vsplit panel below in a current tab.
 ---
 --- If panel with the same name exists - it will be reused.

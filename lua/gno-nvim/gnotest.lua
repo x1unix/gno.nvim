@@ -69,11 +69,13 @@ local function call_gnotest(opts, gno_opts)
       on_stdout = function (_, data)
         vim.schedule(function ()
           vim.api.nvim_buf_set_lines(buf, -1, -1, false, { data })
+          utils.buf_scroll_to_bottom(buf)
         end)
       end,
       on_stderr = function (_, data)
         vim.schedule(function ()
           vim.api.nvim_buf_set_lines(buf, -1, -1, false, { data })
+          utils.buf_scroll_to_bottom(buf)
         end)
       end,
       on_exit = function(_, exit_code)
