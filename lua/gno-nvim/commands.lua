@@ -2,6 +2,7 @@ local M = {}
 
 local job = require "plenary.job"
 local utils = require "gno-nvim.utils"
+local gnotest = require "gno-nvim.gnotest"
 
 ---@param opts table<string, any>
 ---@param gno_opts GnoCmdOpts
@@ -81,7 +82,7 @@ end
 
 ---@param opts GnoNvimCommandsOpts|nil?
 function M.setup(opts)
-  local gnotest = require "gno-nvim.gnotest"
+  gnotest.setup(opts)
 
   vim.api.nvim_create_user_command(
     "GnoFmt", gnofmt,

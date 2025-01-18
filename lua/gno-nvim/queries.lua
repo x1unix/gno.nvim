@@ -46,8 +46,6 @@ function M.find_test_cases(bufnr, cur_row)
   local tree = parser:parse()[1]
   local root = tree:root()
 
-  print(string.format("Cursor: %d", cur_row))
-
   local query = ts.query.get(lang_name, 'tests')
   if query == nil then
     vim.notify("GnoTest: failed to get tests Treesitter query", vim.log.levels.ERROR)

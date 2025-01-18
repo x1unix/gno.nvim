@@ -44,6 +44,8 @@ local function get_test_context()
   }
 end
 
+local gnotest_buf_type = "gnotest"
+
 ---@class GnoTestCommandArgs
 ---@field args table<string>: List of command line args
 ---@field label string: Test run operation label
@@ -56,7 +58,7 @@ local function call_gnotest(opts, gno_opts)
   local args = utils.array_concat({ "test", "-v" }, opts.args, gno_opts.global_args)
   vim.notify("GnoTest: " .. opts.label, vim.log.levels.INFO)
 
-  local buf = utils.upsert_bottom_panel("GnoTest", "plaintext")
+  local buf = utils.upsert_bottom_panel("GnoTest", gnotest_buf_type)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
     "$ gno " .. table.concat(args, " "),
   })
@@ -176,5 +178,36 @@ function M.run_command(opts, gno_opts)
   },gno_opts)
 end
 
+---@param opts GnoNvimCommandsOpts|nil?
+function M.setup(opts)
+  -- Setup highlight groups for unit test results
+  vim.api.nvim_create_autocmd('ColorScheme', {
+    pattern = '*',
+    callback = function()
+      vim.api.nvim_set_hl(0, 'GoTestSuccess', { fg = '#66cc66' })
+    end,
+  })
+
+  vim.api.nvim_create_autocmd('FileType', {
+    pattern = gnotest_buf_type,
+    callback = function(args)
+      vim.api.nvim_buf_call(args.buf, function()
+        vim.fn.matchadd('Comment', '^\\$ gno test .*')
+        vim.fn.matchadd('GoTestSuccess', '^ok\\s.*')
+
+        -- matchadd doesn't support regex groups and optionals.
+        vim.fn.matchadd('ErrorMsg', '^FAIL:.*')
+        vim.fn.matchadd('ErrorMsg', '^FAIL\\s.*')
+        vim.fn.matchadd('ErrorMsg', '^FAIL$')
+        vim.fn.matchadd('ErrorMsg', '^--- FAIL:.*')
+        vim.fn.matchadd('ErrorMsg', '^[A-Za-z0-9_\\.]*: test pkg: failed:.*')
+
+        -- gno.land/p/demo/uassert support.
+        vim.fn.matchadd('ErrorMsg', '^uassert\\.[A-Za-z]*:.*')
+        vim.fn.matchadd('ErrorMsg', '^should be .*')
+      end)
+    end,
+  })
+end
 
 return M
