@@ -2,7 +2,7 @@
 
 Gno language support for NeoVim.
 
-https://github.com/x1unix/gno.nvim/raw/refs/heads/feat/select-test-case/docs/demo.mp4
+https://github.com/user-attachments/assets/08f5d0db-78db-465d-96e7-62fb381b31bb
 
 ## Features
 
