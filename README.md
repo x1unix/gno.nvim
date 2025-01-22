@@ -26,7 +26,7 @@ https://github.com/user-attachments/assets/08f5d0db-78db-465d-96e7-62fb381b31bb
 
 * Gno Language Server:
     * [gnoverse/gnopls](https://github.com/gnoverse/gnopls) - Based on gopls.
-    * [golang/gnopls](https://github.com/gnolang/gnopls/) - Unstable, not recommended.
+    * [gnolang/gnopls](https://github.com/gnolang/gnopls/) - Unstable, not recommended.
 
 ### NeoVim Plugins
 
