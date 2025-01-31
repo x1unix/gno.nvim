@@ -10,6 +10,7 @@ local M = {}
 
 ---@class GnoTestCtx
 ---@field is_unit? boolean
+---@field is_golden? boolean
 ---@field file? string
 ---@field testcase? string
 ---@field label string
@@ -32,6 +33,7 @@ local function get_test_context()
   if is_unit or is_golden then
     return {
       is_unit = is_unit,
+      is_golden = is_golden,
       file = vim.fn.fnamemodify(current_file, ":t"),
       label = vim.fn.fnamemodify(current_file, ":."),
       dir = dirname,
@@ -102,7 +104,13 @@ local function show_test_picker(ctx, gno_opts, opts)
   local bufnr = vim.api.nvim_get_current_buf()
   local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
 
-  local options = queries.find_test_cases(bufnr, row)
+  local options
+  if ctx.is_unit then
+    options = queries.find_test_cases(bufnr, row)
+  else
+    options = { "file/" .. ctx.file }
+  end
+
   if not options or #options == 0 then
       call_gnotest({
         label = ctx.label,
@@ -165,7 +173,7 @@ function M.run_command(opts, gno_opts)
     verb = { ctx.file or "." }
     test_label = ctx.label
 
-    if ctx.is_unit then
+    if ctx.is_unit or ctx.is_golden then
       show_test_picker(ctx, gno_opts, opts)
       return
     end
